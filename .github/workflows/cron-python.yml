@@ -8,6 +8,13 @@ jobs:
   run-python-script:
     runs-on: ubuntu-latest
 
+    env:
+      REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
+      CLIENT_ID: ${{ secrets.CLIENT_ID }}
+      CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

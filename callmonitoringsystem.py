@@ -20,7 +20,7 @@ def get_call_history(access_token,smtp):
     'Sonu Sathyan':"support21@meramerchant.com"}
 
     for sm_name in sales_Manager_names:
-        url = f"https://crmsandbox.zoho.com/crm/v2/Calls/search?criteria=(Owner:equals:{sm_name})and(Call_Status:equals:Overdue)&per_page=200&page=1"
+        url = f"https://crm.zoho.com/crm/v2/Calls/search?criteria=(Owner:equals:{sm_name})and(Call_Status:equals:Overdue)&per_page=200&page=1"
         headers = {
             "Authorization":f"Zoho-oauthtoken {access_token}"
         }
