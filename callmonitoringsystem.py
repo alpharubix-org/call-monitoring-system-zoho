@@ -55,7 +55,7 @@ def get_call_history(access_token,smtp):
                        #check if the warning count is created or not if not create a warning count
                         if collection.find_one({'call_id':call.get('id')}) is None:#create a warning count 
                             collection.insert_one({"sales_manager":sm_name,"lead_name":(call.get('What_Id').get('name')),"call_id":call.get('id'),"Warning_count":1,"last_modified_date":datetime.datetime.now().strftime('%Y-%m-%d')})
-                            # send_overdue_email_to_sales_manager(manager_name=sm_name,sales_manger_email=sales_Manager_names,overdue_call_id=call.get('id'),smtp=smtp)
+                            send_overdue_email_to_sales_manager(manager_name=sm_name,sales_manger_email=sales_Manager_names,overdue_call_id=call.get('id'),smtp=smtp)
                             day_warning_count+=1
                             print("call overdue notification send database created")
                         else:
@@ -68,7 +68,7 @@ def get_call_history(access_token,smtp):
                             print("Email already sent for today")
                         else:
                             collection.update_one({'call_id':call.get('id')},{'$inc':{"Warning_count":1}},{'$set':{"last_modified_date":datetime.datetime.now().strftime('%Y-%m-%d')}})
-                            # send_overdue_email_to_manager(manager_name=sm_name,sales_manger_email=sales_Manager_names,overdue_call_id=call.get('id'),smtp=smtp)
+                            send_overdue_email_to_manager(manager_name=sm_name,sales_manger_email=sales_Manager_names,overdue_call_id=call.get('id'),smtp=smtp)
                             two_day_warning_count+=1
                             print("call overdue notification  send to manager database updated")
                     elif delay_count.days==3:
@@ -78,7 +78,7 @@ def get_call_history(access_token,smtp):
                             print("Email already sent for today")
                         else:
                             collection.update_one({'call_id':call.get('id')},{'$inc':{"Warning_count":1}},{'$set':{"last_modified_date":datetime.datetime.now().strftime('%Y-%m-%d')}})
-                            # send_overdue_email_to_ceo(manager_name=sm_name,sales_manger_email=sales_Manager_names,overdue_call_id=call.get('id'),smtp=smtp)
+                            send_overdue_email_to_ceo(manager_name=sm_name,sales_manger_email=sales_Manager_names,overdue_call_id=call.get('id'),smtp=smtp)
                             three_day_warning_count+=1
                             print("call overdue notification  send to manager database updated")                  
         except requests.exceptions.RequestException as err:
