@@ -74,7 +74,7 @@ def get_call_history(access_token,smtp):
                                             '$set': {"last_modified_date": datetime.datetime.now().strftime('%Y-%m-%d')}
                                         }
                                     )
-                            send_overdue_email_to_manager(lead_name=call.get('Last_Name'),sales_manger_email=sales_Manager_names[sm_name],overdue_call_id=call.get('id'),smtp=smtp)
+                            send_overdue_email_to_manager(lead_name=call.get('Last_Name'),sales_rep_name=sales_Manager_names[sm_name],smtp=smtp)
                             two_day_warning_count+=1
                             print("call overdue notification  send to manager database updated")
                     elif delay_count.days==3:
@@ -90,7 +90,7 @@ def get_call_history(access_token,smtp):
                                     '$set': {"last_modified_date": datetime.datetime.now().strftime('%Y-%m-%d')}
                                 }
                             )
-                            send_overdue_email_to_ceo(lead_name=call.get('Last_Name'),sales_manger_email=sales_Manager_names[sm_name],overdue_call_id=call.get('id'),smtp=smtp)
+                            send_overdue_email_to_ceo(lead_name=call.get('Last_Name'),sales_rep_name=sales_Manager_names[sm_name],smtp=smtp)
                             three_day_warning_count+=1
                             print("call overdue notification  send to manager database updated")                  
         except requests.exceptions.RequestException as err:
