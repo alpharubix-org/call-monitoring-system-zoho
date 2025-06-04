@@ -1,8 +1,9 @@
 name: Scheduled Python Job
 
 on:
+  workflow_dispatch:
   schedule:
-    - cron: '0 4,6,8,10,12,13 * * 1-5'  # Runs 2hr once daily between monday to friday
+    - cron: '0 4,6,8,10,12,13 * * 1-5' # Runs 2hr once daily between monday to friday
 
 jobs:
   run-python-script:
@@ -22,7 +23,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'  # Change if needed
+          python-version: '3.11' # Change if needed
 
       - name: Install dependencies
         run: |
