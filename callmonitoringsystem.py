@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import os
 import datetime
 import db
+from collections import defaultdict
 load_dotenv(override=True)
 
 def get_call_history(access_token,smtp):
@@ -35,11 +36,12 @@ def get_call_history(access_token,smtp):
             print('Total call count is',len(data))
             overdue_call_count = 0# holds the number of overdue calls per sales manager
             collection = db.get_collection()
-            day_warning_count = 0
-            two_day_warning_count = 0
-            three_day_warning_count = 0
             more_than_three_day_warning_count = 0
-
+            main_dict = {
+                    1: defaultdict(list),
+                    2: defaultdict(list),
+                    3: defaultdict(list)
+                }
             for call in data:
                 created_time = call.get('Created_Time') #call created time Created_Time
                 formated_time =  datetime.datetime.strptime(created_time, '%Y-%m-%dT%H:%M:%S%z').date()
@@ -55,9 +57,7 @@ def get_call_history(access_token,smtp):
                        #check if the warning count is created or not if not create a warning count
                         if collection.find_one({'call_id':call.get('id')}) is None:#create a warning count 
                             collection.insert_one({"sales_manager":sm_name,"lead_name":(call.get('What_Id').get('name')),"call_id":call.get('id'),"Warning_count":1,"last_modified_date":datetime.datetime.now().strftime('%Y-%m-%d')})
-                            send_overdue_email_to_sales_manager(manager_name=sm_name,sales_manger_email=sales_Manager_names[sm_name],overdue_call_id=call.get('id'),smtp=smtp)
-                            day_warning_count+=1
-                            print("call overdue notification send database created")
+                            main_dict[1][sm_name].append(call.get('What_Id').get('name'))
                         else:
                            print("mail already sent for  1 day warning")
                     elif delay_count.days==2:
@@ -65,7 +65,7 @@ def get_call_history(access_token,smtp):
                         warning_doc = collection.find_one({'call_id':call.get('id')})
                         get_last_up = warning_doc.get('last_modified_date') #fetch the last modified date
                         if get_last_up == datetime.datetime.now().strftime('%Y-%m-%d'):
-                            print("Email already sent for today")
+                            print("Email already sent for  2 day warning")
                         else:
                             collection.update_one(
                                         {'call_id': call.get('id')},
@@ -74,8 +74,7 @@ def get_call_history(access_token,smtp):
                                             '$set': {"last_modified_date": datetime.datetime.now().strftime('%Y-%m-%d')}
                                         }
                                     )
-                            send_overdue_email_to_manager(lead_name=call.get('Last_Name'),sales_rep_name=sales_Manager_names[sm_name],smtp=smtp)
-                            two_day_warning_count+=1
+                            main_dict[2][sm_name].append(call.get('What_Id').get('name'))
                             print("call overdue notification  send to manager database updated")
                     elif delay_count.days==3:
                         warning_doc = collection.find_one({'call_id':call.get('id')})
@@ -90,21 +89,46 @@ def get_call_history(access_token,smtp):
                                     '$set': {"last_modified_date": datetime.datetime.now().strftime('%Y-%m-%d')}
                                 }
                             )
-                            send_overdue_email_to_ceo(lead_name=call.get('Last_Name'),sales_rep_name=sales_Manager_names[sm_name],smtp=smtp)
-                            three_day_warning_count+=1
+                            main_dict[3][sm_name].append(call.get('What_Id').get('name'))
                             print("call overdue notification  send to manager database updated")                  
         except requests.exceptions.RequestException as err:
             print(f"Request error: {err}")
-        print("onedaydelayedcall",day_warning_count)
-        print("twodaydelayedcall",two_day_warning_count)
-        print("threedaydelayedcall",three_day_warning_count)
-        print("fourdaydelayedcall",more_than_three_day_warning_count)    
+        print(sm_name)
+        print("onedaydelayedcall", len(main_dict[1][sm_name]))  
+        print("twodaydelayedcall",len(main_dict[2][sm_name]))
+        print("threedaydelayedcall",len(main_dict[3][sm_name]))    
+        print("fourdaydelayedcall",more_than_three_day_warning_count)
+        
+        #send mail to based on the main dict
+        if main_dict[1][sm_name]:  # checks if the list is not empty
+            send_overdue_email_to_sales_manager(
+            manager_name=sm_name,
+            sales_manger_email=sales_Manager_names[sm_name],
+            overdue_call_names=main_dict[1][sm_name],
+            smtp=smtp
+        )
 
-def send_overdue_email_to_sales_manager(manager_name,sales_manger_email ,overdue_call_id,smtp,sender_name="call-monitoring-system",):
+        if main_dict[2][sm_name]:
+            print(2)
+            send_overdue_email_to_manager(
+                lead_name=main_dict[2][sm_name],
+                sales_rep_name=sm_name,
+                smtp=smtp
+            )
+
+        if main_dict[3][sm_name]:
+            send_overdue_email_to_ceo(
+                lead_name=main_dict[3][sm_name],
+                sales_rep_name=sm_name,
+                smtp=smtp
+            )
+
+
+def send_overdue_email_to_sales_manager(manager_name,sales_manger_email,overdue_call_names,smtp,sender_name="call-monitoring-system",):
     subject = "Test mail Action Required: Overdue Calls Alert"
     html_content = f"""
     <p>Dear {manager_name},</p>
-    <p>Your call is overdued for the call id <strong>{overdue_call_id}</strong>. Please take action immediately.</p>
+    <p>Your call is overdued for the call name <strong>{overdue_call_names}</strong>. Please take action immediately.</p>
     """
     
     # Build the message
