@@ -67,7 +67,13 @@ def get_call_history(access_token,smtp):
                         if get_last_up == datetime.datetime.now().strftime('%Y-%m-%d'):
                             print("Email already sent for today")
                         else:
-                            collection.update_one({'call_id':call.get('id')},{'$inc':{"Warning_count":1}},{'$set':{"last_modified_date":datetime.datetime.now().strftime('%Y-%m-%d')}})
+                            collection.update_one(
+                                        {'call_id': call.get('id')},
+                                        {
+                                            '$inc': {"Warning_count": 1},
+                                            '$set': {"last_modified_date": datetime.datetime.now().strftime('%Y-%m-%d')}
+                                        }
+                                    )
                             send_overdue_email_to_manager(manager_name=sm_name,sales_manger_email=sales_Manager_names[sm_name],overdue_call_id=call.get('id'),smtp=smtp)
                             two_day_warning_count+=1
                             print("call overdue notification  send to manager database updated")
@@ -77,7 +83,13 @@ def get_call_history(access_token,smtp):
                         if get_last_up == datetime.datetime.now().strftime('%Y-%m-%d'): 
                             print("Email already sent for today")
                         else:
-                            collection.update_one({'call_id':call.get('id')},{'$inc':{"Warning_count":1}},{'$set':{"last_modified_date":datetime.datetime.now().strftime('%Y-%m-%d')}})
+                            collection.update_one(
+                                {'call_id': call.get('id')},
+                                {
+                                    '$inc': {"Warning_count": 1},
+                                    '$set': {"last_modified_date": datetime.datetime.now().strftime('%Y-%m-%d')}
+                                }
+                            )
                             send_overdue_email_to_ceo(manager_name=sm_name,sales_manger_email=sales_Manager_names[sm_name],overdue_call_id=call.get('id'),smtp=smtp)
                             three_day_warning_count+=1
                             print("call overdue notification  send to manager database updated")                  
