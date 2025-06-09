@@ -60,37 +60,72 @@ def get_call_history(access_token,smtp):
                             main_dict[1][sm_name].append(call.get('What_Id').get('name'))
                         else:
                            print("mail already sent for  1 day warning")
-                    elif delay_count.days==2:
-                        #check if the email is already sent today or not
-                        warning_doc = collection.find_one({'call_id':call.get('id')})
-                        get_last_up = warning_doc.get('last_modified_date') #fetch the last modified date
-                        if get_last_up == datetime.datetime.now().strftime('%Y-%m-%d'):
-                            print("Email already sent for  2 day warning")
+                    elif delay_count.days == 2:
+                        call_id = call.get('id')
+                        call_name = call.get('What_Id', {}).get('name')
+                        today = datetime.datetime.now().strftime('%Y-%m-%d')
+
+                        # Check if this call already exists in the DB
+                        warning_doc = collection.find_one({'call_id': call_id})
+
+                        if warning_doc:
+                            last_sent_date = warning_doc.get('last_modified_date')
+                            if last_sent_date == today:
+                                print("Email already sent for 2-day warning.")
+                            else:
+                                # Update warning count and last modified date
+                                collection.update_one(
+                                    {'call_id': call_id},
+                                    {
+                                        '$inc': {"Warning_count": 1},
+                                        '$set': {"last_modified_date": today}
+                                    }
+                                )
+                                main_dict[2][sm_name].append(call_name)
+                                print("Call overdue notification sent to manager, database updated.")
                         else:
-                            collection.update_one(
-                                        {'call_id': call.get('id')},
-                                        {
-                                            '$inc': {"Warning_count": 1},
-                                            '$set': {"last_modified_date": datetime.datetime.now().strftime('%Y-%m-%d')}
-                                        }
-                                    )
-                            main_dict[2][sm_name].append(call.get('What_Id').get('name'))
-                            print("call overdue notification  send to manager database updated")
-                    elif delay_count.days==3:
-                        warning_doc = collection.find_one({'call_id':call.get('id')})
-                        get_last_up = warning_doc.get('last_modified_date') #fetch the last modified date
-                        if get_last_up == datetime.datetime.now().strftime('%Y-%m-%d'): 
-                            print("Email already sent for today")
+                            # New entry for the call
+                            collection.insert_one({
+                                'call_id': call_id,
+                                'Warning_count': 1,
+                                'last_modified_date': today
+                            })
+                            main_dict[2][sm_name].append(call_name)
+                            print("Overdue notification sent and created in the DB.")
+
+                    elif delay_count.days == 3:
+                        call_id = call.get('id')
+                        call_name = call.get('What_Id', {}).get('name')
+                        today = datetime.datetime.now().strftime('%Y-%m-%d')
+
+                        # Try to find an existing warning document
+                        warning_doc = collection.find_one({'call_id': call_id})
+
+                        if warning_doc:
+                            last_sent_date = warning_doc.get('last_modified_date')
+                            if last_sent_date == today:
+                                print("Email already sent for today's 3-day warning.")
+                            else:
+                                # Update the existing document
+                                collection.update_one(
+                                    {'call_id': call_id},
+                                    {
+                                        '$inc': {"Warning_count": 1},
+                                        '$set': {"last_modified_date": today}
+                                    }
+                                )
+                                main_dict[3][sm_name].append(call_name)
+                                print("Call overdue notification sent to manager, database updated.")
                         else:
-                            collection.update_one(
-                                {'call_id': call.get('id')},
-                                {
-                                    '$inc': {"Warning_count": 1},
-                                    '$set': {"last_modified_date": datetime.datetime.now().strftime('%Y-%m-%d')}
-                                }
-                            )
-                            main_dict[3][sm_name].append(call.get('What_Id').get('name'))
-                            print("call overdue notification  send to manager database updated")                  
+                            # Create a new document if it doesn't exist
+                            collection.insert_one({
+                                'call_id': call_id,
+                                'Warning_count': 1,
+                                'last_modified_date': today
+                            })
+                            main_dict[3][sm_name].append(call_name)
+                            print("Overdue 3-day notification sent and record created in DB.")
+    
         except requests.exceptions.RequestException as err:
             print(f"Request error: {err}")
         print(sm_name)
