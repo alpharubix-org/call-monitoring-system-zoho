@@ -78,8 +78,10 @@ def get_call_history(access_token,smtp):
                                     {'call_id': call_id},
                                     {
                                         '$inc': {"Warning_count": 1},
-                                        '$set': {"last_modified_date": today}
-                                    }
+                                        '$set': {"last_modified_date": today,  "last_modified_date": today,
+                                                "lead_name":call_name,
+                                                "sales_manager": sm_name}
+                                    },
                                 )
                                 main_dict[2][sm_name].append(call_name)
                                 print("Call overdue notification sent to manager, database updated.")
@@ -87,6 +89,8 @@ def get_call_history(access_token,smtp):
                             # New entry for the call
                             collection.insert_one({
                                 'call_id': call_id,
+                                'lead_name':call_name,
+                                'sales_manager':call_name,
                                 'Warning_count': 1,
                                 'last_modified_date': today
                             })
@@ -111,7 +115,10 @@ def get_call_history(access_token,smtp):
                                     {'call_id': call_id},
                                     {
                                         '$inc': {"Warning_count": 1},
-                                        '$set': {"last_modified_date": today}
+                                        '$set': {"last_modified_date": today,
+                                                 "lead_name":call_name,
+                                                 "sales_manager":sm_name,
+                                                }
                                     }
                                 )
                                 main_dict[3][sm_name].append(call_name)
@@ -120,6 +127,8 @@ def get_call_history(access_token,smtp):
                             # Create a new document if it doesn't exist
                             collection.insert_one({
                                 'call_id': call_id,
+                                'sales_manager':sm_name,
+                                'lead_name':call_name,
                                 'Warning_count': 1,
                                 'last_modified_date': today
                             })
