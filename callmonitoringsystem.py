@@ -78,7 +78,7 @@ def get_call_history(access_token,smtp):
                                     {'call_id': call_id},
                                     {
                                         '$inc': {"Warning_count": 1},
-                                        '$set': {"last_modified_date": today,  "last_modified_date": today,
+                                        '$set': {"last_modified_date": today,
                                                 "lead_name":call_name,
                                                 "sales_manager": sm_name}
                                     },
