@@ -160,12 +160,6 @@ def get_call_history(access_token,smtp):
                 smtp=smtp
             )
 
-        if main_dict[3][sm_name]:
-            send_overdue_email_to_ceo(
-                lead_name=main_dict[3][sm_name],
-                sales_rep_name=sm_name,
-                smtp=smtp
-            )
 
 
 def send_overdue_email_to_sales_manager(manager_name,sales_manger_email,overdue_call_names,smtp,sender_name="call-monitoring-system",):
